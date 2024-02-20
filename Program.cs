@@ -12,6 +12,7 @@ namespace GetPcInformation
     {
         static void Main(string[] args)
         {
+            string exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DumpEDID.exe");
             string hostName = Environment.MachineName;
 
             string _serialNumber = RemoveExtraWhitespace(ExecuteWMICCommand("bios get serialnumber").Replace("SerialNumber","").Replace("\r\r\n",""));
@@ -19,6 +20,9 @@ namespace GetPcInformation
             string pcModel = RemoveExtraWhitespace(ExecuteWMICCommand("csproduct get name").Replace("Name", "").Replace("\r\r\n", ""));
             string _service = "";
             string _group = "";
+
+            string output = RunExternalExe(exePath);
+           
 
             string[] parts = hostName.Split('-');
 
@@ -47,9 +51,12 @@ namespace GetPcInformation
             Console.WriteLine("Group Name: " + _group);
             Console.WriteLine("PC Model: " + pcModel);
             Console.WriteLine("PC Serial Number: " + _serialNumber);
+            Console.WriteLine(output);
 
+
+            /*
             // Change API Url
-            
+
             //api / MaterielsApi ? materielName = &serialNumber = &categorie = &service = &group =
             string apiUrl = "http://172.16.11.7/api/MaterielsApi" +
                             "?MaterielName=" + Uri.EscapeDataString(pcModel) +
@@ -79,7 +86,7 @@ namespace GetPcInformation
                 Console.WriteLine("Exception: " + ex.Message);
             }
 
-
+            */
             Console.ReadKey();
         }
 
@@ -100,6 +107,36 @@ namespace GetPcInformation
         {
             // Replace multiple consecutive whitespace characters with a single space
             return Regex.Replace(input, @"\s+", " ");
+        }
+
+        //run DumpEDID
+        static string RunExternalExe(string exePath, string arguments = "")
+        {
+            try
+            {
+                // Create process start info
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = arguments,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                // Create and start the process
+                using (Process process = Process.Start(startInfo))
+                {
+                    // Read the output (if any)
+                    string output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit(); // Wait for the process to exit
+                    return output;
+                }
+            }
+            catch (Exception ex)
+            {
+                return "Error: " + ex.Message;
+            }
         }
     }
 }
