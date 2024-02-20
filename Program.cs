@@ -1,33 +1,45 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Management;
-using System.Net.Http;
+using System.Net;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace GetPcInformation
 {
     internal class Program
     {
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
             string hostName = Environment.MachineName;
 
-            string pcModel = GetPCModel();
-            string _serialNumber = GetSystemSerialNumber();
+            string _serialNumber = RemoveExtraWhitespace(ExecuteWMICCommand("bios get serialnumber").Replace("SerialNumber","").Replace("\r\r\n",""));
+            
+            string pcModel = RemoveExtraWhitespace(ExecuteWMICCommand("csproduct get name").Replace("Name", "").Replace("\r\r\n", ""));
             string _service = "";
             string _group = "";
 
             string[] parts = hostName.Split('-');
 
-            if (parts.Length == 3 && parts[0] == "HIT")
+            if (parts[0] == "HIT")
             {
                 _service = parts[1];
-                _group = parts[2];
+                if (parts.Length > 3)
+                {
+                    _group = parts[3];
+                }
+                else
+                {
+                    _group = parts[2];
+                }
+                
+                
             }
             else
             {
                 Console.WriteLine("Invalid host name format.");
+                return; // Exit the program
             }
 
             Console.WriteLine("Host Name: " + hostName);
@@ -36,64 +48,58 @@ namespace GetPcInformation
             Console.WriteLine("PC Model: " + pcModel);
             Console.WriteLine("PC Serial Number: " + _serialNumber);
 
-            //change API Url
-            string apiUrl = "http://localhost:5268/api/MaterielsApi";
+            // Change API Url
+            
+            //api / MaterielsApi ? materielName = &serialNumber = &categorie = &service = &group =
+            string apiUrl = "http://172.16.11.7/api/MaterielsApi" +
+                            "?MaterielName=" + Uri.EscapeDataString(pcModel) +
+                            "&SerialNumber=" + Uri.EscapeDataString(_serialNumber) +
+                            "&Categorie=UC" +
+                            "&Service=" + Uri.EscapeDataString(_service) +
+                            "&Group=" + Uri.EscapeDataString(_group);
 
-            using (HttpClient client = new HttpClient())
+
+            try
             {
-                try
+                // Create HTTP request
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUrl);
+                request.Method = "GET";
+
+                // Get HTTP response
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream responseStream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(responseStream))
                 {
-                    var data = new { MaterielName = pcModel, SerialNumber = _serialNumber, Categorie = "UC", Service = _service, Group = _group };
-
-                    var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
-
-                    HttpResponseMessage response = await client.PostAsync(apiUrl, content);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string responseContent = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine("Response: " + responseContent);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Error: " + response.StatusCode);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Exception: " + ex.Message);
+                    string responseContent = reader.ReadToEnd();
+                    Console.WriteLine("Response: " + responseContent);
                 }
             }
-
-            Console.ReadLine();
-        }
-        static string GetPCModel()
-        {
-            string pcModel = "";
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_ComputerSystem");
-
-            foreach (ManagementObject obj in searcher.Get())
+            catch (Exception ex)
             {
-                pcModel = obj["Model"].ToString();
-                break;
+                Console.WriteLine("Exception: " + ex.Message);
             }
 
-            return pcModel;
+
+            Console.ReadKey();
         }
 
-        static string GetSystemSerialNumber()
+        static string ExecuteWMICCommand(string arguments)
         {
-            string serialNumber = "";
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_BIOS");
+            Process process = new Process();
+            process.StartInfo.FileName = "wmic";
+            process.StartInfo.Arguments = arguments;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
 
-            foreach (ManagementObject obj in searcher.Get())
-            {
-                serialNumber = obj["SerialNumber"].ToString();
-                break;
-            }
-
-            return serialNumber;
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            return output.Trim();
+        }
+        static string RemoveExtraWhitespace(string input)
+        {
+            // Replace multiple consecutive whitespace characters with a single space
+            return Regex.Replace(input, @"\s+", " ");
         }
     }
-
 }
