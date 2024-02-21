@@ -1,0 +1,10 @@
+E:\Projects\c#\GetPcInformation\bin\Debug\GetPcInformation.exe.config
+E:\Projects\c#\GetPcInformation\bin\Debug\GetPcInformation.exe
+E:\Projects\c#\GetPcInformation\bin\Debug\GetPcInformation.pdb
+E:\Projects\c#\GetPcInformation\bin\Debug\Newtonsoft.Json.dll
+E:\Projects\c#\GetPcInformation\bin\Debug\Newtonsoft.Json.xml
+E:\Projects\c#\GetPcInformation\obj\Debug\GetPcInformation.csproj.AssemblyReference.cache
+E:\Projects\c#\GetPcInformation\obj\Debug\GetPcInformation.csproj.CoreCompileInputs.cache
+E:\Projects\c#\GetPcInformation\obj\Debug\GetPcInformation.csproj.CopyComplete
+E:\Projects\c#\GetPcInformation\obj\Debug\GetPcInformation.exe
+E:\Projects\c#\GetPcInformation\obj\Debug\GetPcInformation.pdb

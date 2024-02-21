@@ -1,28 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Management;
 using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
 
 namespace GetPcInformation
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            string exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DumpEDID.exe");
             string hostName = Environment.MachineName;
-
-            string _serialNumber = RemoveExtraWhitespace(ExecuteWMICCommand("bios get serialnumber").Replace("SerialNumber","").Replace("\r\r\n",""));
-            
-            string pcModel = RemoveExtraWhitespace(ExecuteWMICCommand("csproduct get name").Replace("Name", "").Replace("\r\r\n", ""));
+            hostName = "HIT-RAD-SEC-MED";
+            string pcModel = GetPCModel();
+            string _serialNumber = GetSystemSerialNumber();
             string _service = "";
             string _group = "";
-
-            string output = RunExternalExe(exePath);
-           
+            string monitorName;
+            string monitorSerialNumber;
 
             string[] parts = hostName.Split('-');
 
@@ -37,13 +35,12 @@ namespace GetPcInformation
                 {
                     _group = parts[2];
                 }
-                
-                
+
+
             }
             else
             {
                 Console.WriteLine("Invalid host name format.");
-                return; // Exit the program
             }
 
             Console.WriteLine("Host Name: " + hostName);
@@ -51,65 +48,63 @@ namespace GetPcInformation
             Console.WriteLine("Group Name: " + _group);
             Console.WriteLine("PC Model: " + pcModel);
             Console.WriteLine("PC Serial Number: " + _serialNumber);
-            Console.WriteLine(output);
+            Console.WriteLine("###############");
 
 
-            /*
-            // Change API Url
 
-            //api / MaterielsApi ? materielName = &serialNumber = &categorie = &service = &group =
-            string apiUrl = "http://172.16.11.7/api/MaterielsApi" +
-                            "?MaterielName=" + Uri.EscapeDataString(pcModel) +
-                            "&SerialNumber=" + Uri.EscapeDataString(_serialNumber) +
-                            "&Categorie=UC" +
-                            "&Service=" + Uri.EscapeDataString(_service) +
-                            "&Group=" + Uri.EscapeDataString(_group);
+            //change API Url
+            string _url = "http://localhost:5268/api/MaterielsApi";
+            // Push Pc Information to api 
+            pushToApi(_url, pcModel, _serialNumber, "UC", _service, _group);
 
+            string exePath = "DumpEDID.exe";
+            string output = RunExternalExe(exePath);
+            var m = ParseMonitors(output);
 
-            try
+            foreach (var item in m)
             {
-                // Create HTTP request
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUrl);
-                request.Method = "GET";
+                Console.WriteLine(item.ModelName);
+                Console.WriteLine(item.SerialNumber);
 
-                // Get HTTP response
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                using (Stream responseStream = response.GetResponseStream())
-                using (StreamReader reader = new StreamReader(responseStream))
-                {
-                    string responseContent = reader.ReadToEnd();
-                    Console.WriteLine("Response: " + responseContent);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Exception: " + ex.Message);
+                // Push Pc Information to api 
+                pushToApi(_url, item.ModelName, item.SerialNumber, "ECRAN", _service, _group);
             }
 
-            */
-            Console.ReadKey();
-        }
 
-        static string ExecuteWMICCommand(string arguments)
+
+
+
+
+            Console.ReadLine();
+        }
+        static string GetPCModel()
         {
-            Process process = new Process();
-            process.StartInfo.FileName = "wmic";
-            process.StartInfo.Arguments = arguments;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.Start();
+            string pcModel = "";
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_ComputerSystem");
 
-            string output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-            return output.Trim();
+            foreach (ManagementObject obj in searcher.Get())
+            {
+                pcModel = obj["Model"].ToString();
+                break;
+            }
+
+            return pcModel;
         }
-        static string RemoveExtraWhitespace(string input)
+
+        static string GetSystemSerialNumber()
         {
-            // Replace multiple consecutive whitespace characters with a single space
-            return Regex.Replace(input, @"\s+", " ");
+            string serialNumber = "";
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_BIOS");
+
+            foreach (ManagementObject obj in searcher.Get())
+            {
+                serialNumber = obj["SerialNumber"].ToString();
+                break;
+            }
+
+            return serialNumber;
         }
 
-        //run DumpEDID
         static string RunExternalExe(string exePath, string arguments = "")
         {
             try
@@ -138,5 +133,80 @@ namespace GetPcInformation
                 return "Error: " + ex.Message;
             }
         }
+
+        static List<MonitorInfo> ParseMonitors(string output)
+        {
+            List<MonitorInfo> monitors = new List<MonitorInfo>();
+
+            string[] lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            MonitorInfo monitor = null;
+
+            foreach (string line in lines)
+            {
+                if (line.StartsWith("Monitor Name"))
+                {
+                    if (monitor != null)
+                    {
+                        monitors.Add(monitor);
+                    }
+                    monitor = new MonitorInfo();
+                    monitor.ModelName = line.Replace("Monitor Name             : ", "").Trim();
+                }
+
+                if (monitor != null && line.Trim().StartsWith("Serial Number") && monitor.SerialNumber == null)
+                {
+                    string[] parts = line.Split(new[] { ':' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length == 2)
+                    {
+                        monitor.SerialNumber = parts[1].Trim();
+                    }
+                }
+            }
+
+            // Add the last monitor
+            if (monitor != null)
+            {
+                monitors.Add(monitor);
+            }
+
+            return monitors;
+        }
+
+        static void pushToApi(string url, string MaterielName, string SerialNumber, string Categorie, string Service, string Group)
+        {
+            string apiUrl = url +
+                            "?MaterielName=" + MaterielName +
+                            "&SerialNumber=" + SerialNumber +
+                            "&Categorie=" + Categorie +
+                            "&Service=" + Service +
+                            "&Group=" + Group;
+            try
+            {
+                // Create HTTP request
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(apiUrl);
+                request.Method = "GET";
+
+                // Get HTTP response
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (Stream responseStream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(responseStream))
+                {
+                    string responseContent = reader.ReadToEnd();
+                    Console.WriteLine("Response: " + responseContent);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception: " + ex.Message);
+            }
+        }
     }
+
+    class MonitorInfo
+    {
+        public string SerialNumber { get; set; }
+        public string ModelName { get; set; }
+    }
+
 }
