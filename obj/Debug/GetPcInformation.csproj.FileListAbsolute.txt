@@ -8,3 +8,13 @@ E:\Projects\c#\GetPcInformation\obj\Debug\GetPcInformation.csproj.CoreCompileInp
 E:\Projects\c#\GetPcInformation\obj\Debug\GetPcInformation.csproj.CopyComplete
 E:\Projects\c#\GetPcInformation\obj\Debug\GetPcInformation.exe
 E:\Projects\c#\GetPcInformation\obj\Debug\GetPcInformation.pdb
+C:\Users\HouxxaM\Desktop\GetPcSerialNumber\bin\Debug\GetPcInformation.exe.config
+C:\Users\HouxxaM\Desktop\GetPcSerialNumber\bin\Debug\GetPcInformation.exe
+C:\Users\HouxxaM\Desktop\GetPcSerialNumber\bin\Debug\GetPcInformation.pdb
+C:\Users\HouxxaM\Desktop\GetPcSerialNumber\bin\Debug\Newtonsoft.Json.dll
+C:\Users\HouxxaM\Desktop\GetPcSerialNumber\bin\Debug\Newtonsoft.Json.xml
+C:\Users\HouxxaM\Desktop\GetPcSerialNumber\obj\Debug\GetPcInformation.csproj.AssemblyReference.cache
+C:\Users\HouxxaM\Desktop\GetPcSerialNumber\obj\Debug\GetPcInformation.csproj.CoreCompileInputs.cache
+C:\Users\HouxxaM\Desktop\GetPcSerialNumber\obj\Debug\GetPcInformation.csproj.CopyComplete
+C:\Users\HouxxaM\Desktop\GetPcSerialNumber\obj\Debug\GetPcInformation.exe
+C:\Users\HouxxaM\Desktop\GetPcSerialNumber\obj\Debug\GetPcInformation.pdb
