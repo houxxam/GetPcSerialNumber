@@ -1,0 +1,3 @@
+C:\Users\user\Desktop\getPc\test\GetPcData.pdb
+C:\Users\user\Desktop\getPc\test\DumpEDID.exe
+C:\Users\user\Desktop\getPc\test\GetPcData.exe
