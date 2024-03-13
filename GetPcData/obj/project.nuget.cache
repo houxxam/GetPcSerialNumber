@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "32pEfAA8FG/Veo/IXGy589gdGfCu1Pq57IDMFjSNHvoI/7Qq2WE1sCIFD10eyPkzoQV6sCuWHy1PbT5eNfvUsw==",
+  "dgSpecHash": "zAoqeQwOjQWtfMz9p0XvtwQyPo9OVroH1y8eZ/p/UUxJGutggL5N/ZZUnFkM0T5eOPbb57aE+upsfyyG5nO7ng==",
   "success": true,
-  "projectFilePath": "C:\\Users\\user\\Desktop\\GetPcData\\GetPcData\\GetPcData.csproj",
+  "projectFilePath": "C:\\Users\\user\\source\\repos\\GetPcSerialNumber\\GetPcData\\GetPcData.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\user\\.nuget\\packages\\iniparser\\1.0.1\\iniparser.1.0.1.nupkg.sha512",
     "C:\\Users\\user\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\user\\.nuget\\packages\\system.codedom\\6.0.0\\system.codedom.6.0.0.nupkg.sha512",
     "C:\\Users\\user\\.nuget\\packages\\system.management\\6.0.0\\system.management.6.0.0.nupkg.sha512"

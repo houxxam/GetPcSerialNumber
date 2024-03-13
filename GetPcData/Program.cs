@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Management;
+using INIParser;
+
 
 namespace GetPcInformation
 {
@@ -15,6 +17,32 @@ namespace GetPcInformation
             string _group = "";
             string monitorName;
             string monitorSerialNumber;
+
+            string apiValue = "";
+
+            // Path to your config file
+            string configFilePath = "config.ini";
+
+            // Read all lines from the config file
+            string[] lines = File.ReadAllLines(configFilePath);
+
+            // Loop through each line to find the line with the API configuration
+            foreach (string line in lines)
+            {
+                // Check if the line contains the API configuration
+                if (line.StartsWith("api"))
+                {
+                    // Split the line by '=' and get the second part (value)
+                    string[] part = line.Split('=');
+                    if (part.Length == 2)
+                    {
+                        // Trim any whitespace and quotes from the value
+                        apiValue = part[1].Trim().Trim('"');
+
+                        
+                    }
+                }
+            }
 
             string[] parts = hostName.Split('-');
 
@@ -42,10 +70,9 @@ namespace GetPcInformation
             Console.WriteLine("PC Serial Number: " + _serialNumber);
             Console.WriteLine("###############");
 
-            //change API Url
-            string _url = "http://172.16.11.7/api/MaterielsApi";
+            
             // Push Pc Information to api 
-             pushToApi(_url, pcModel, _serialNumber, "UC", _service, _group);
+             pushToApi(apiValue, pcModel, _serialNumber, "UC", _service, _group);
 
             string exePath = "DumpEDID.exe";
             string output = await RunExternalExe(exePath);
@@ -57,7 +84,7 @@ namespace GetPcInformation
                 Console.WriteLine(item.SerialNumber);
 
                 // Push Pc Information to api 
-                await pushToApi(_url, item.ModelName, item.SerialNumber, "ECRAN", _service, _group);
+                await pushToApi(apiValue, item.ModelName, item.SerialNumber, "ECRAN", _service, _group);
             }
 
             

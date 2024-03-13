@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\user\\Desktop\\GetPcData\\GetPcData\\GetPcData.csproj": {}
+    "C:\\Users\\user\\source\\repos\\GetPcSerialNumber\\GetPcData\\GetPcData.csproj": {}
   },
   "projects": {
-    "C:\\Users\\user\\Desktop\\GetPcData\\GetPcData\\GetPcData.csproj": {
+    "C:\\Users\\user\\source\\repos\\GetPcSerialNumber\\GetPcData\\GetPcData.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\user\\Desktop\\GetPcData\\GetPcData\\GetPcData.csproj",
+        "projectUniqueName": "C:\\Users\\user\\source\\repos\\GetPcSerialNumber\\GetPcData\\GetPcData.csproj",
         "projectName": "GetPcData",
-        "projectPath": "C:\\Users\\user\\Desktop\\GetPcData\\GetPcData\\GetPcData.csproj",
+        "projectPath": "C:\\Users\\user\\source\\repos\\GetPcSerialNumber\\GetPcData\\GetPcData.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\user\\Desktop\\GetPcData\\GetPcData\\obj\\publish\\win-x86\\",
+        "outputPath": "C:\\Users\\user\\source\\repos\\GetPcSerialNumber\\GetPcData\\obj\\publish\\win-x86\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -45,6 +45,10 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "IniParser": {
+              "target": "Package",
+              "version": "[1.0.1, )"
+            },
             "Microsoft.NET.ILLink.Analyzers": {
               "suppressParent": "All",
               "target": "Package",
